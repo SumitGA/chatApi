@@ -6,6 +6,7 @@ import session from 'express-session';
 import morgan from 'morgan';
 import { authRouter } from './routes';
 import { postsRouter } from './routes';
+import sessionMiddleware from './middlewares/session.middleware';
 
 const app: Express = express();
 
@@ -16,14 +17,11 @@ app.use(express.urlencoded({ extended: false }));
 /** Takes care of JSON data */
 app.use(express.json());
 app.use(cors());
-app.use(
-  session({
-    secret: 'secretCode',
-    resave: true,
-    saveUninitialized: true,
-  })
-)
+
+/** using express-session middlware */
+
 app.use(cookieParser());
+app.use(sessionMiddleware)
 app.use(passport.initialize());
 app.use(passport.session());
 /** Routes */

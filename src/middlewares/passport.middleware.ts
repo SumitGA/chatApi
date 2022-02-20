@@ -10,11 +10,16 @@ passport.serializeUser<any, any>((req, user, done) => {
   done(undefined, user);
 });
 
-passport.deserializeUser((id, done) => {
-  User.findById(id, (err: NativeError, user: userInterface) => done(err, user));
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err);
+  }
 })
 
-passport.use('signin', new LocalStrategy({ usernameField: "email" }, (email, password, done) => {
+passport.use('signin', new LocalStrategy({ usernameField: "email", passwordField: "password" }, async (email, password, done) => {
   User.findOne({ email: email.toLowerCase() }, (err: NativeError, user: userInterface) => {
     if (err) { return done(err); }
     if (!user) {
@@ -30,4 +35,4 @@ passport.use('signin', new LocalStrategy({ usernameField: "email" }, (email, pas
   });
 }));
 
-
+export default passport;
