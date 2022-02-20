@@ -1,28 +1,25 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
-import cors from 'cors';
-import morgan from 'morgan';
-import routes from './routes/posts';
+import mongoose from "mongoose";
+import { app } from './app';
+import 'dotenv/config';
 
-const app: Express = express();
+// Connecting to mongodb instance on local server
+const start = async () => {
+  if (!process.env.JWT_KEY) {
+    throw new Error('JWT_KEY must be defined');
+  }
+  if (!process.env.MONGO_URI) {
+    throw new Error('Mongo URI must be defind')
+  }
+  try {
+    await mongoose.connect(process.env.MONGO_URI)
+    console.log('Connected to mongodb');
+  } catch (err) {
+    console.log(err);
+  }
+};
 
-/** Logging */
-app.use(morgan('dev'));
-/** Parse the request */
-app.use(express.urlencoded({ extended: false }));
-/** Takes care of JSON data */
-app.use(express.json());
-app.use(cors());
-/** Routes */
-app.use('/', routes);
+app.listen(3000, () => {
+  console.log('Listening on port 3000')
+})
 
-/** Error handling */
-app.use((req: Request, res: Response, next: NextFunction) => {
-  const error = new Error('not found');
-  return res.status(404).json({
-    message: error.message,
-  });
-});
-
-/** Server */
-const PORT: any = process.env.PORT ?? 8080;
-app.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
+start();
