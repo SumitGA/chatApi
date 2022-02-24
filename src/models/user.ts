@@ -6,12 +6,9 @@ import bcrypt from 'bcrypt';
  * required to create a new User
  */
 export default interface UserAttrs {
-  firstname: string;
-  lastname: string;
   username: string;
   email: string;
   password: string;
-  avatar?: string;
   comparePassword: comparePasswordFunction;
 }
 
@@ -29,27 +26,15 @@ interface UserModel extends mongoose.Model<UserDoc> {
  */
 
 export interface UserDoc extends mongoose.Document {
-  firstname: string;
-  lastname: string;
   username: string;
   email: string;
   password: string;
-  avatar?: string;
   comparePassword: comparePasswordFunction;
 }
 
 type comparePasswordFunction = (candidatePassword: string, password: string, cb: (err: mongoose.Error | any, isMatch: any) => void) => void;
 
 const userSchema = new mongoose.Schema({
-  firstname: {
-    type: String,
-    required: true,
-
-  },
-  lastname: {
-    type: String,
-    required: true,
-  },
   username: {
     type: String,
     required: true,
@@ -62,10 +47,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
-  },
-  avatar: {
-    type: String,
-    required: false
   },
 }, {
   toJSON: {
