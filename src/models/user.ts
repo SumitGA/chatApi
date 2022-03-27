@@ -32,7 +32,7 @@ export interface UserDoc extends mongoose.Document {
   comparePassword: comparePasswordFunction;
 }
 
-type comparePasswordFunction = (candidatePassword: string, password: string, cb: (err: mongoose.Error | any, isMatch: any) => void) => void;
+type comparePasswordFunction = (candidatePassword: string, password: string, cb: (err: any | any, isMatch: any) => void) => void;
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -66,7 +66,7 @@ userSchema.pre("save", function save(next) {
   if (!user.isModified("password")) { return next(); }
   bcrypt.genSalt(10, (err, salt) => {
     if (err) { return next(err); }
-    bcrypt.hash(user.password, salt, (err: mongoose.Error | any, hash: string) => {
+    bcrypt.hash(user.password, salt, (err: any | any, hash: string) => {
       if (err) { return next(err); }
       user.password = hash;
       next();

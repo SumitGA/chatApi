@@ -1,7 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import passport from 'passport';
+import passport from './middlewares/passport.middleware';
 import session from 'express-session';
 import morgan from 'morgan';
 import { authRouter } from './routes';
@@ -19,7 +19,6 @@ app.use(express.json());
 app.use(cors());
 
 /** using express-session middlware */
-
 app.use(cookieParser());
 app.use(sessionMiddleware)
 app.use(passport.initialize());
@@ -27,6 +26,11 @@ app.use(passport.session());
 /** Routes */
 app.use(authRouter);
 app.use(postsRouter);
+app.use('*', (req: Request, res: Response, next: NextFunction) => {
+  res.status(404).send({
+    message: 'Resource not found.',
+  });
+});
 
 /** Error handling */
 
