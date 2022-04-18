@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import axios, { AxiosResponse } from 'axios';
+import passport from 'passport';
 
 interface Post {
   userId: Number;

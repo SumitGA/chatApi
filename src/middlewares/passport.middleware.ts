@@ -1,38 +1,26 @@
 import passport from 'passport';
 import passportLocal from 'passport-local';
+import { Request } from 'express';
 import { User, UserDoc } from '../models';
 import userInterface from '../models/user';
-import mongoose from 'mongoose';
 import { NextFunction } from 'express';
 import { NativeError } from 'mongoose';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import passportJwt from 'passport-jwt';
+import 'dotenv/config';
 
-/**
- * @Interface Declarations sections
- */
-interface TokenInterface {
-  email: String;
-  id: String;
-  username: String;
-}
 
 const LocalStrategy = passportLocal.Strategy;
 // Implements passport-jwt Strategy
-const JwtStrategy = Strategy;
+const JwtStrategy = passportJwt.Strategy;
+const ExtractJwt = passportJwt.ExtractJwt;
 
 passport.serializeUser((user: any, done) => {
   done(null, user.id);
 });
-
-passport.deserializeUser(async (id: string, done) => {
-  // Converting id into mongoose readable from;
-  const userId = new mongoose.Types.ObjectId(id);
-  try {
-    const user = await User.findOne({ _id: userId });
-    done(undefined, user);
-  } catch (error) {
-    done(error, undefined);
-  }
+passport.deserializeUser(async (user: any, done) => {
+  User.findById(user.id, function (err: any, user: any) {
+    done(err, user);
+  })
 })
 
 passport.use('signup', new LocalStrategy({
@@ -43,7 +31,7 @@ passport.use('signup', new LocalStrategy({
     const user = await User.create({ username: String, email: String, password: String });
     return done(user);
   } catch (error) {
-    done(error)
+    return done(error)
   }
 }));
 
@@ -51,7 +39,7 @@ passport.use('login', new LocalStrategy({ usernameField: "email", passwordField:
   try {
     const user = await User.findOne({
       where: {
-        email: email
+        email
       },
     });
 
@@ -77,27 +65,22 @@ passport.use('login', new LocalStrategy({ usernameField: "email", passwordField:
   }
 }));
 
-
 passport.use('jwt', new JwtStrategy({
   secretOrKey: `${process.env.JWT_SECRET}`,
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  algorithms: ["RS512"],
+  jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
 },
-  async (token: TokenInterface, done: NextFunction) => {
+  async (jwt_payload, done) => {
     try {
-      const user = await User.findOne({
-        where: {
-          email: token.email
-        }
-      });
+      const user = await User.findOne({ where: { email: jwt_payload.email } });
+      // const user = await User.findById(jwt_payload.id);
       if (!user) {
         return done(null);
       }
-      return done(user);
+      // Never change this line, requires exactly to continue with done(null, user)
+      done(null, user);
     } catch (error) {
       done(error)
     }
   }
 ))
-
 export default passport;

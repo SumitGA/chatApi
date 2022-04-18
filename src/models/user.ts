@@ -48,7 +48,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-}, {
+},
+  {
   toJSON: {
     // this will remove the password from the response and versioning
     transform(doc, ret) {

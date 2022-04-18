@@ -4,6 +4,7 @@ import { User } from '../models/user';
 import passport from '../middlewares/passport.middleware';
 import userInterface from '../models/user';
 import { doesNotMatch } from 'assert';
+import 'dotenv/config';
 
 interface ErrorInterface {
   code: string;
@@ -23,28 +24,30 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 
   user = await User.create({ username, email, password });
 
-  const token = jwt.sign({ email: user.email }, `${process.env.JWT_SECRET}`, { expiresIn: '24h' });
+  // const token = jwt.sign({ id: user.id, email: user.email }, `${process.env.JWT_SECRET}`, { expiresIn: '24h' });
 
-  req.login(user, (err) => {
-    if (err) throw err;
-    res.status(201).json({
-      user,
-      accessToken: `Bearer ${token}`,
-      expiresIn: '24h',
-    });
-  })
+  // res.status(201).json({
+  //   user,
+  //   accessToken: `Bearer ${token}`,
+  //   expiresIn: '24h',
+  // })
+  if (!user) {
+    res.status(500).json({ message: 'Could not create user' });
+  }
+
+  res.status(201).json({ message: 'User created successfully' });
 }
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
   try {
-    // req.user is set by Passport.js after successful authentication
-    if (!req.user) {
+    const user = await User.findOne({ email });
+    if (!user) {
       res.status(401).json({ message: 'Incorrect email or password' });
     } else {
-      const token = jwt.sign({ email }, `${process.env.JWT_SECRET}`, { expiresIn: '24h' });
+      const token = jwt.sign({ id: user.id, email: user.email }, `${process.env.JWT_SECRET}`, { expiresIn: '24h' });
       res.status(200).json({
-        user: req.user,
+        user,
         accessToken: `Bearer ${token}`,
         expiresIn: '24h',
       });
